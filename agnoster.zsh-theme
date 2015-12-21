@@ -69,9 +69,9 @@ prompt_end() {
 
 # Context: user@hostname (who am I and where am I)
 prompt_context() {
-  if [[ "$USER" != "$DEFAULT_USER" || -n "$SSH_CONNECTION" ]]; then
-    prompt_segment $PRIMARY_FG default " %(!.%{%F{yellow}%}.)$USER@%m "
-  fi
+  if [[ -n "$current_context" ]]; then
+		prompt_segment $PRIMARY_FG default " $current_context "
+	fi
 }
 
 # Git: branch/detached head, dirty status
@@ -139,6 +139,22 @@ prompt_agnoster_setup() {
   autoload -Uz vcs_info
 
   prompt_opts=(cr subst percent)
+
+	#pre-compute context segment
+	current_context=''
+  if [[ "$USER" != "$DEFAULT_USER" ]];then
+    current_context="%(!.%{%F{yellow}%}.%{%F{blue}%})$USER%{%f%}"
+	fi
+  if [[ "$USER" != "$DEFAULT_USER" && -n "$SSH_CONNECTION" ]];then
+		current_context+='@';
+	fi
+	if [[ -n "$SSH_CONNECTION" ]];then
+		if [[ -n "$HOST_COLOR" ]];then
+			current_context+="%{%F{$HOST_COLOR}%}%m%{%f%}"
+		else
+			current_context+="%m"
+		fi
+	fi
 
   add-zsh-hook precmd prompt_agnoster_precmd
 
